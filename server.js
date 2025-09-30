@@ -48,6 +48,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
 
+/*
 // Ruta de login
 app.post('/api/login', async (req, res) => {
     const { correo, password, tipo } = req.body;
@@ -114,6 +115,89 @@ app.post('/api/login', async (req, res) => {
             res.status(401).json({ error: 'Contraseña incorrecta' });
         }
     });
+});
+*/
+
+// Ruta de login automático (detecta tipo de usuario)
+app.post('/api/login-auto', async (req, res) => {
+    const { correo, password } = req.body;
+    
+    console.log('Intento de login automático:', { correo });
+    
+    if (!correo || !password) {
+        return res.status(400).json({ error: 'Correo y contraseña son requeridos' });
+    }
+    
+    // Buscar en todas las tablas para detectar el tipo de usuario
+    const tables = [
+        { name: 'alumno', tipo: 'alumno', idField: 'id_alumno' },
+        { name: 'jefe_servicio', tipo: 'jefe', idField: 'id_jefe' },
+        { name: 'administrador', tipo: 'admin', idField: 'id_admin' }
+    ];
+    
+    let userFound = null;
+    let userType = null;
+    
+    // Función para buscar en una tabla específica
+    const searchInTable = (table) => {
+        return new Promise((resolve, reject) => {
+            const query = `SELECT * FROM ${table.name} WHERE correo_electronico = ? AND activo = TRUE`;
+            
+            db.execute(query, [correo], (err, results) => {
+                if (err) {
+                    reject(err);
+                } else if (results.length > 0) {
+                    resolve({ user: results[0], tipo: table.tipo, idField: table.idField });
+                } else {
+                    resolve(null);
+                }
+            });
+        });
+    };
+    
+    try {
+        // Buscar secuencialmente en todas las tablas
+        for (const table of tables) {
+            const result = await searchInTable(table);
+            if (result) {
+                userFound = result.user;
+                userType = result.tipo;
+                break;
+            }
+        }
+        
+        if (!userFound) {
+            console.log('Usuario no encontrado:', correo);
+            return res.status(401).json({ error: 'Usuario no encontrado' });
+        }
+        
+        // Verificar contraseña (en desarrollo: 123456)
+        // En producción deberías usar: await bcrypt.compare(password, userFound.password_hash)
+        if (password === '123456') {
+            req.session.user = {
+                id: userFound[userType === 'alumno' ? 'id_alumno' : 
+                             userType === 'jefe' ? 'id_jefe' : 'id_admin'],
+                nombre: userFound.nombre_completo,
+                correo: userFound.correo_electronico,
+                tipo: userType
+            };
+            
+            console.log('✅ Login automático exitoso:', req.session.user);
+            
+            res.json({ 
+                success: true, 
+                user: req.session.user,
+                message: `Bienvenido ${userFound.nombre_completo} (${userType})`
+            });
+        } else {
+            console.log('❌ Contraseña incorrecta para:', correo);
+            res.status(401).json({ error: 'Contraseña incorrecta' });
+        }
+        
+    } catch (error) {
+        console.error('❌ Error en login automático:', error);
+        res.status(500).json({ error: 'Error del servidor al buscar usuario' });
+    }
 });
 
 // Ruta para verificar sesión
