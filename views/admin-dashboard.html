@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Administrador</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Becas - Administrador</h1>
+            <div class="user-info">
+                <span id="userName">Cargando...</span>
+                <button id="btnLogout">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <nav class="admin-nav">
+            <button class="nav-btn active" data-tab="resumen">Resumen General</button>
+            <button class="nav-btn" data-tab="gestion-alumnos">Gestión de Alumnos</button>
+            <button class="nav-btn" data-tab="gestion-jefes">Gestión de Jefes</button>
+            <button class="nav-btn" data-tab="reportes">Reportes</button>
+        </nav>
+
+        <main>
+            <!-- Pestaña: Resumen General -->
+            <div id="resumen" class="tab-content active">
+                <section class="panel">
+                    <h2>Resumen General del Sistema</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total Alumnos</h3>
+                            <div class="stat-number" id="totalAlumnosSistema">0</div>
+                            <span>Registrados</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total Jefes</h3>
+                            <div class="stat-number" id="totalJefesSistema">0</div>
+                            <span>De servicio</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Horas Totales</h3>
+                            <div class="stat-number" id="totalHorasSistema">0</div>
+                            <span>Realizadas</span>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Pendientes</h3>
+                            <div class="stat-number" id="totalPendientesSistema">0</div>
+                            <span>Por confirmar</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <h2>Alumnos por Área</h2>
+                    <div id="chartAreas" class="chart-container">
+                        <!-- Gráfico se cargará aquí -->
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <h2>Últimos Registros</h2>
+                    <div class="table-container">
+                        <table id="tablaUltimosRegistros">
+                            <thead>
+                                <tr>
+                                    <th>Alumno</th>
+                                    <th>Jefe</th>
+                                    <th>Fecha</th>
+                                    <th>Horas</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyUltimosRegistros">
+                                <!-- Los datos se cargarán con JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Pestaña: Gestión de Alumnos -->
+            <div id="gestion-alumnos" class="tab-content">
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2>Gestión de Alumnos</h2>
+                        <button id="btnNuevoAlumno" class="btn-primary">+ Nuevo Alumno</button>
+                    </div>
+                    
+                    <div class="filtros">
+                        <input type="text" id="filtroAlumnos" placeholder="Buscar alumno...">
+                        <select id="filtroCarrera">
+                            <option value="">Todas las carreras</option>
+                        </select>
+                        <select id="filtroJefe">
+                            <option value="">Todos los jefes</option>
+                        </select>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="tablaGestionAlumnos">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Carrera</th>
+                                    <th>Semestre</th>
+                                    <th>Jefe Asignado</th>
+                                    <th>Horas Hechas/Total</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyGestionAlumnos">
+                                <!-- Los datos se cargarán con JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Pestaña: Gestión de Jefes -->
+            <div id="gestion-jefes" class="tab-content">
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2>Gestión de Jefes de Servicio</h2>
+                        <button id="btnNuevoJefe" class="btn-primary">+ Nuevo Jefe</button>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="tablaGestionJefes">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Área</th>
+                                    <th>Ubicación</th>
+                                    <th>Alumnos Asignados</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyGestionJefes">
+                                <!-- Los datos se cargarán con JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Pestaña: Reportes -->
+            <div id="reportes" class="tab-content">
+                <section class="panel">
+                    <h2>Generar Reportes</h2>
+                    <div class="reportes-grid">
+                        <div class="reporte-card">
+                            <h3>Reporte de Avance por Área</h3>
+                            <p>Genera un reporte del progreso de todos los alumnos por área.</p>
+                            <button class="btn-primary" onclick="adminDashboard.generarReporte('avance-areas')">Generar</button>
+                        </div>
+                        <div class="reporte-card">
+                            <h3>Reporte de Asistencias</h3>
+                            <p>Reporte detallado de asistencias por período.</p>
+                            <button class="btn-primary" onclick="adminDashboard.generarReporte('asistencias')">Generar</button>
+                        </div>
+                        <div class="reporte-card">
+                            <h3>Reporte de Alumnos por Beca</h3>
+                            <p>Listado de alumnos agrupados por tipo de beca.</p>
+                            <button class="btn-primary" onclick="adminDashboard.generarReporte('alumnos-beca')">Generar</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para nuevo/editar alumno -->
+    <div id="modalAlumno" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="modalAlumnoTitulo">Nuevo Alumno</h3>
+            <form id="formAlumno">
+                <input type="hidden" id="alumnoId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="alumnoNombre">Nombre Completo *</label>
+                        <input type="text" id="alumnoNombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alumnoCorreo">Correo Electrónico *</label>
+                        <input type="email" id="alumnoCorreo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alumnoCarrera">Carrera *</label>
+                        <input type="text" id="alumnoCarrera" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alumnoSemestre">Semestre *</label>
+                        <input type="number" id="alumnoSemestre" min="1" max="12" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alumnoPromedio">Promedio</label>
+                        <input type="number" id="alumnoPromedio" step="0.1" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="alumnoTipoBeca">Tipo de Beca</label>
+                        <select id="alumnoTipoBeca">
+                            <option value="Académica">Académica</option>
+                            <option value="Deportiva">Deportiva</option>
+                            <option value="Cultural">Cultural</option>
+                            <option value="Social">Social</option>
+                        </select>
+                    </div>
+                    <!-- En el modal de alumno, CAMBIAR esto: -->
+                    <div class="form-group">
+                        <label for="alumnoPorcentajeBeca">% de Beca *</label>
+                        <input type="number" id="alumnoPorcentajeBeca" min="0" max="100" required>
+                        <small>Este porcentaje determinará las horas totales de servicio (50% beca = 50 horas)</small>
+                    </div>
+    
+                    <div class="form-group">
+                        <label for="alumnoJefe">Jefe Asignado</label>
+                        <select id="alumnoJefe">
+                            <option value="">Sin asignar</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">Guardar</button>
+                    <button type="button" class="btn-cancel" onclick="adminDashboard.cerrarModalAlumno()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para nuevo/editar jefe -->
+    <div id="modalJefe" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="modalJefeTitulo">Nuevo Jefe de Servicio</h3>
+            <form id="formJefe">
+                <input type="hidden" id="jefeId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="jefeNombre">Nombre Completo *</label>
+                        <input type="text" id="jefeNombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jefeCorreo">Correo Electrónico *</label>
+                        <input type="email" id="jefeCorreo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jefeArea">Área *</label>
+                        <input type="text" id="jefeArea" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jefeUbicacion">Ubicación</label>
+                        <input type="text" id="jefeUbicacion">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">Guardar</button>
+                    <button type="button" class="btn-cancel" onclick="adminDashboard.cerrarModalJefe()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/admin-dashboard.js"></script>
+</body>
+</html>

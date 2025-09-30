@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Jefe de Servicio</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Becas - Jefe de Servicio</h1>
+            <div class="user-info">
+                <span id="userName">Cargando...</span>
+                <span id="userArea" class="area-badge"></span>
+                <button id="btnLogout">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Panel de Resumen General -->
+            <section class="panel">
+                <h2>Resumen del Área</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Alumnos</h3>
+                        <div class="stat-number" id="totalAlumnos">0</div>
+                        <span>Asignados</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Horas Totales</h3>
+                        <div class="stat-number" id="horasTotales">0</div>
+                        <span>Realizadas</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pendientes</h3>
+                        <div class="stat-number" id="registrosPendientes">0</div>
+                        <span>Por confirmar</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Promedio Avance</h3>
+                        <div class="stat-number" id="promedioAvance">0%</div>
+                        <span>Del área</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista de Alumnos Asignados -->
+            <section class="panel">
+                <h2>Alumnos a Mi Cargo</h2>
+                <div class="table-container">
+                    <table id="tablaAlumnos">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Carrera</th>
+                                <th>Semestre</th>
+                                <th>Horas Hechas</th>
+                                <th>Total Horas</th>
+                                <th>Avance</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyAlumnos">
+                            <!-- Los datos se cargarán con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Registros Pendientes de Confirmación -->
+            <section class="panel">
+                <h2>Registros Pendientes de Confirmación</h2>
+                <div class="table-container">
+                    <table id="tablaPendientes">
+                        <thead>
+                            <tr>
+                                <th>Alumno</th>
+                                <th>Fecha</th>
+                                <th>Check-In</th>
+                                <th>Check-Out</th>
+                                <th>Horas</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyPendientes">
+                            <!-- Los datos se cargarán con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para confirmar/rechazar registro -->
+    <div id="modalRegistro" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Confirmar Registro</h3>
+            <div id="modalDetalles">
+                <!-- Detalles del registro -->
+            </div>
+            <div class="modal-actions">
+                <button id="btnConfirmar" class="btn-primary">Confirmar</button>
+                <button id="btnRechazar" class="btn-secondary">Rechazar</button>
+                <button id="btnCancelar" class="btn-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/jefe-dashboard.js"></script>
+</body>
+</html>

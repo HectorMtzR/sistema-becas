@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Alumno</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Becas - Alumno</h1>
+            <div class="user-info">
+                <span id="userName">Cargando...</span>
+                <button id="btnLogout">Cerrar Sesión</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- Panel de Resumen -->
+            <section class="panel">
+                <h2>Mi Progreso</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Horas Realizadas</h3>
+                        <div class="stat-number" id="horasHechas">0</div>
+                        <span>de <span id="totalHoras">0</span> horas</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Porcentaje</h3>
+                        <div class="stat-number" id="porcentaje">0%</div>
+                        <span>Completado</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Registros Pendientes</h3>
+                        <div class="stat-number" id="pendientes">0</div>
+                        <span>Por confirmar</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Control de Asistencia -->
+            <section class="panel">
+                <h2>Registro de Asistencia</h2>
+                <div class="attendance-controls">
+                    <button id="btnCheckin" class="btn-primary">Check-In</button>
+                    <button id="btnCheckout" class="btn-secondary" disabled>Check-Out</button>
+                    <div id="currentSession" class="current-session" style="display: none;">
+                        <p>Jornada activa desde: <span id="sessionStart">--:--:--</span></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Historial de Asistencias -->
+            <section class="panel">
+                <h2>Historial de Asistencias</h2>
+                <div class="table-container">
+                    <table id="tablaAsistencias">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Check-In</th>
+                                <th>Check-Out</th>
+                                <th>Horas</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyAsistencias">
+                            <!-- Los datos se cargarán con JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/alumno-dashboard.js"></script>
+</body>
+</html>
