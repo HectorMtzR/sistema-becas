@@ -385,3 +385,38 @@ tr:hover {
     color: #666;
     display: block;
 }
+
+/* Estilos para campos de contraseña */
+.password-options {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.password-options .btn-small {
+    padding: 3px 8px;
+    font-size: 0.7em;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.password-options .btn-small:hover {
+    background: #545b62;
+}
+
+.password-strength {
+    margin-top: 5px;
+    font-size: 0.8em;
+}
+
+.strength-weak { color: #dc3545; }
+.strength-medium { color: #ffc107; }
+.strength-strong { color: #28a745; }
+
+.password-generated {
+    background: #d4edda !important;
+    border-color: #c3e6cb !important;
+}

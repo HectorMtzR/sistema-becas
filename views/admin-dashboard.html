@@ -191,6 +191,22 @@
                         <label for="alumnoCorreo">Correo Electrónico *</label>
                         <input type="email" id="alumnoCorreo" required>
                     </div>
+
+                    <!-- En el modal de alumno, AGREGAR campo de contraseña -->
+                    <div class="form-group">
+                        <label for="alumnoPassword">Contraseña *</label>
+                        <input type="text" id="alumnoPassword" required>
+                        <div class="password-options">
+                            <button type="button" class="btn-small" onclick="adminDashboard.generarPassword('alumno')">
+                                Generar Automática
+                            </button>
+                            <button type="button" class="btn-small" onclick="adminDashboard.mostrarPassword('alumno')">
+                                👁️
+                            </button>
+                        </div>
+                        <small>La contraseña se mostrará solo una vez al crear el usuario</small>
+                    </div>
+
                     <div class="form-group">
                         <label for="alumnoCarrera">Carrera *</label>
                         <input type="text" id="alumnoCarrera" required>
@@ -225,6 +241,8 @@
                             <option value="">Sin asignar</option>
                         </select>
                     </div>
+
+                
                 </div>
                 <div class="modal-actions">
                     <button type="submit" class="btn-primary">Guardar</button>
@@ -250,6 +268,22 @@
                         <label for="jefeCorreo">Correo Electrónico *</label>
                         <input type="email" id="jefeCorreo" required>
                     </div>
+
+                    <!-- En el modal de jefe, AGREGAR campo de contraseña -->
+                    <div class="form-group">
+                        <label for="jefePassword">Contraseña *</label>
+                        <input type="text" id="jefePassword" required>
+                        <div class="password-options">
+                            <button type="button" class="btn-small" onclick="adminDashboard.generarPassword('jefe')">
+                                Generar Automática
+                            </button>
+                            <button type="button" class="btn-small" onclick="adminDashboard.mostrarPassword('jefe')">
+                                👁️
+                            </button>
+                        </div>
+                        <small>La contraseña se mostrará solo una vez al crear el usuario</small>
+                    </div>
+
                     <div class="form-group">
                         <label for="jefeArea">Área *</label>
                         <input type="text" id="jefeArea" required>

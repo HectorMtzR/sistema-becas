@@ -578,6 +578,213 @@ class AdminDashboard {
             window.location.href = '/';
         }
     }
+
+    // Agregar estas funciones a la clase AdminDashboard
+
+    generarPassword(tipo) {
+        const password = this.generarPasswordAleatoria();
+        const fieldId = tipo === 'alumno' ? 'alumnoPassword' : 'jefePassword';
+        const field = document.getElementById(fieldId);
+        
+        field.value = password;
+        field.type = 'text';
+        field.classList.add('password-generated');
+        
+        // Mostrar la contraseña por 5 segundos luego ocultarla
+        setTimeout(() => {
+            field.type = 'password';
+            field.classList.remove('password-generated');
+        }, 5000);
+    }
+
+    generarPasswordAleatoria() {
+        const longitud = 8;
+        const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+        let password = '';
+        
+        for (let i = 0; i < longitud; i++) {
+            password += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+        }
+        
+        return password;
+    }
+
+    mostrarPassword(tipo) {
+        const fieldId = tipo === 'alumno' ? 'alumnoPassword' : 'jefePassword';
+        const field = document.getElementById(fieldId);
+        
+        if (field.type === 'password') {
+            field.type = 'text';
+            setTimeout(() => {
+                if (field.type === 'text') {
+                    field.type = 'password';
+                }
+            }, 3000);
+        } else {
+            field.type = 'password';
+        }
+    }
+
+    // Actualizar la función abrirModalAlumno
+    abrirModalAlumno(alumno = null) {
+        const modal = document.getElementById('modalAlumno');
+        const titulo = document.getElementById('modalAlumnoTitulo');
+        const form = document.getElementById('formAlumno');
+        
+        form.reset();
+        
+        if (alumno) {
+            titulo.textContent = 'Editar Alumno';
+            document.getElementById('alumnoId').value = alumno.id_alumno;
+            document.getElementById('alumnoNombre').value = alumno.nombre_completo;
+            document.getElementById('alumnoCorreo').value = alumno.correo_electronico;
+            document.getElementById('alumnoCarrera').value = alumno.carrera;
+            document.getElementById('alumnoSemestre').value = alumno.semestre;
+            document.getElementById('alumnoPromedio').value = alumno.promedio || '';
+            document.getElementById('alumnoTipoBeca').value = alumno.tipo_beca || 'Académica';
+            document.getElementById('alumnoPorcentajeBeca').value = alumno.porcentaje_beca || '';
+            document.getElementById('alumnoJefe').value = alumno.id_jefe || '';
+            document.getElementById('alumnoPassword').value = ''; // No mostrar contraseña existente
+            document.getElementById('alumnoPassword').placeholder = 'Dejar vacío para mantener la actual';
+            document.getElementById('alumnoPassword').required = false;
+        } else {
+            titulo.textContent = 'Nuevo Alumno';
+            document.getElementById('alumnoId').value = '';
+            document.getElementById('alumnoPassword').placeholder = 'Ingresa o genera una contraseña';
+            document.getElementById('alumnoPassword').required = true;
+            // Generar contraseña automáticamente para nuevos usuarios
+            setTimeout(() => this.generarPassword('alumno'), 500);
+        }
+        
+        modal.style.display = 'block';
+    }
+
+    // Actualizar la función abrirModalJefe
+    abrirModalJefe(jefe = null) {
+        const modal = document.getElementById('modalJefe');
+        const titulo = document.getElementById('modalJefeTitulo');
+        const form = document.getElementById('formJefe');
+        
+        form.reset();
+        
+        if (jefe) {
+            titulo.textContent = 'Editar Jefe de Servicio';
+            document.getElementById('jefeId').value = jefe.id_jefe;
+            document.getElementById('jefeNombre').value = jefe.nombre_completo;
+            document.getElementById('jefeCorreo').value = jefe.correo_electronico;
+            document.getElementById('jefeArea').value = jefe.area;
+            document.getElementById('jefeUbicacion').value = jefe.ubicacion || '';
+            document.getElementById('jefePassword').value = ''; // No mostrar contraseña existente
+            document.getElementById('jefePassword').placeholder = 'Dejar vacío para mantener la actual';
+            document.getElementById('jefePassword').required = false;
+        } else {
+            titulo.textContent = 'Nuevo Jefe de Servicio';
+            document.getElementById('jefeId').value = '';
+            document.getElementById('jefePassword').placeholder = 'Ingresa o genera una contraseña';
+            document.getElementById('jefePassword').required = true;
+            // Generar contraseña automáticamente para nuevos usuarios
+            setTimeout(() => this.generarPassword('jefe'), 500);
+        }
+        
+        modal.style.display = 'block';
+    }
+
+    // Actualizar la función guardarAlumno
+    async guardarAlumno() {
+        const formData = {
+            id_alumno: document.getElementById('alumnoId').value || null,
+            nombre_completo: document.getElementById('alumnoNombre').value,
+            correo_electronico: document.getElementById('alumnoCorreo').value,
+            carrera: document.getElementById('alumnoCarrera').value,
+            semestre: document.getElementById('alumnoSemestre').value,
+            promedio: document.getElementById('alumnoPromedio').value || null,
+            tipo_beca: document.getElementById('alumnoTipoBeca').value,
+            porcentaje_beca: document.getElementById('alumnoPorcentajeBeca').value || null,
+            id_jefe: document.getElementById('alumnoJefe').value || null,
+            password: document.getElementById('alumnoPassword').value
+        };
+        
+        // Validar contraseña para nuevos usuarios
+        if (!formData.id_alumno && !formData.password) {
+            alert('La contraseña es requerida para nuevos alumnos');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/admin/alumno', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.password_generated) {
+                    alert(`Alumno guardado correctamente.\n\nCONTRASEÑA GENERADA: ${data.password_generated}\n\n¡Guarda esta contraseña y compártela con el alumno!`);
+                } else {
+                    alert('Alumno guardado correctamente');
+                }
+                this.cerrarModalAlumno();
+                this.cargarGestionAlumnos();
+                this.cargarResumenGeneral();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error guardando alumno:', error);
+            alert('Error de conexión');
+        }
+    }
+
+    // Actualizar la función guardarJefe
+    async guardarJefe() {
+        const formData = {
+            id_jefe: document.getElementById('jefeId').value || null,
+            nombre_completo: document.getElementById('jefeNombre').value,
+            correo_electronico: document.getElementById('jefeCorreo').value,
+            area: document.getElementById('jefeArea').value,
+            ubicacion: document.getElementById('jefeUbicacion').value,
+            password: document.getElementById('jefePassword').value
+        };
+        
+        // Validar contraseña para nuevos usuarios
+        if (!formData.id_jefe && !formData.password) {
+            alert('La contraseña es requerida para nuevos jefes');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/admin/jefe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.password_generated) {
+                    alert(`Jefe guardado correctamente.\n\nCONTRASEÑA GENERADA: ${data.password_generated}\n\n¡Guarda esta contraseña y compártela con el jefe!`);
+                } else {
+                    alert('Jefe guardado correctamente');
+                }
+                this.cerrarModalJefe();
+                this.cargarGestionJefes();
+                this.cargarJefes(); // Recargar lista para selects
+                this.cargarResumenGeneral();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error guardando jefe:', error);
+            alert('Error de conexión');
+        }
+    }
 }
 
 // Inicializar dashboard

@@ -5,6 +5,7 @@ const path = require('path');
 
 const app = express();
 const port = 3000;
+const bcrypt = require('bcryptjs');
 
 // Configuración
 app.use(express.json());
@@ -48,77 +49,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
 
-/*
-// Ruta de login
-app.post('/api/login', async (req, res) => {
-    const { correo, password, tipo } = req.body;
-    
-    console.log('Intento de login:', { correo, tipo });
-    
-    if (!correo || !password || !tipo) {
-        return res.status(400).json({ error: 'Todos los campos son requeridos' });
-    }
-    
-    let table = '';
-    let idField = '';
-    
-    switch(tipo) {
-        case 'alumno':
-            table = 'alumno';
-            idField = 'id_alumno';
-            break;
-        case 'jefe':
-            table = 'jefe_servicio';
-            idField = 'id_jefe';
-            break;
-        case 'admin':
-            table = 'administrador';
-            idField = 'id_admin';
-            break;
-        default:
-            return res.status(400).json({ error: 'Tipo de usuario inválido' });
-    }
-    
-    const query = `SELECT * FROM ${table} WHERE correo_electronico = ?`;
-    
-    db.execute(query, [correo], (err, results) => {
-        if (err) {
-            console.error('❌ Error en consulta SQL:', err);
-            return res.status(500).json({ error: 'Error del servidor al buscar usuario' });
-        }
-        
-        console.log(`Resultados encontrados para ${correo}:`, results.length);
-        
-        if (results.length === 0) {
-            return res.status(401).json({ error: 'Usuario no encontrado' });
-        }
-        
-        const user = results[0];
-        
-        // Para desarrollo: password simple "123456"
-        if (password === '123456') {
-            req.session.user = {
-                id: user[idField],
-                nombre: user.nombre_completo,
-                correo: user.correo_electronico,
-                tipo: tipo
-            };
-            
-            console.log('✅ Login exitoso:', req.session.user);
-            
-            res.json({ 
-                success: true, 
-                user: req.session.user 
-            });
-        } else {
-            console.log('❌ Contraseña incorrecta para:', correo);
-            res.status(401).json({ error: 'Contraseña incorrecta' });
-        }
-    });
-});
-*/
-
-// Ruta de login automático (detecta tipo de usuario)
+// Ruta de login automático (detecta tipo de usuario) - VERSIÓN CORREGIDA
 app.post('/api/login-auto', async (req, res) => {
     const { correo, password } = req.body;
     
@@ -130,9 +61,9 @@ app.post('/api/login-auto', async (req, res) => {
     
     // Buscar en todas las tablas para detectar el tipo de usuario
     const tables = [
-        { name: 'alumno', tipo: 'alumno', idField: 'id_alumno' },
-        { name: 'jefe_servicio', tipo: 'jefe', idField: 'id_jefe' },
-        { name: 'administrador', tipo: 'admin', idField: 'id_admin' }
+        { name: 'alumno', tipo: 'alumno', idField: 'id_alumno', hasActive: true },
+        { name: 'jefe_servicio', tipo: 'jefe', idField: 'id_jefe', hasActive: true },
+        { name: 'administrador', tipo: 'admin', idField: 'id_admin', hasActive: false }
     ];
     
     let userFound = null;
@@ -141,7 +72,11 @@ app.post('/api/login-auto', async (req, res) => {
     // Función para buscar en una tabla específica
     const searchInTable = (table) => {
         return new Promise((resolve, reject) => {
-            const query = `SELECT * FROM ${table.name} WHERE correo_electronico = ? AND activo = TRUE`;
+            // Construir consulta dinámica
+            let query = `SELECT * FROM ${table.name} WHERE correo_electronico = ?`;
+            if (table.hasActive) {
+                query += ' AND activo = TRUE';
+            }
             
             db.execute(query, [correo], (err, results) => {
                 if (err) {
@@ -171,9 +106,10 @@ app.post('/api/login-auto', async (req, res) => {
             return res.status(401).json({ error: 'Usuario no encontrado' });
         }
         
-        // Verificar contraseña (en desarrollo: 123456)
-        // En producción deberías usar: await bcrypt.compare(password, userFound.password_hash)
-        if (password === '123456') {
+        // Verificar contraseña con bcrypt
+        const validPassword = await bcrypt.compare(password, userFound.password_hash);
+        
+        if (validPassword) {
             req.session.user = {
                 id: userFound[userType === 'alumno' ? 'id_alumno' : 
                              userType === 'jefe' ? 'id_jefe' : 'id_admin'],
@@ -767,8 +703,8 @@ app.get('/api/admin/alumno/:id', requireAuth, (req, res) => {
     });
 });
 
-// En la ruta POST /api/admin/alumno - ACTUALIZAR
-app.post('/api/admin/alumno', requireAuth, (req, res) => {
+// Actualizar la ruta de creación/edición de alumno
+app.post('/api/admin/alumno', requireAuth, async (req, res) => {
     if (req.session.user.tipo !== 'admin') {
         return res.status(403).json({ error: 'No autorizado' });
     }
@@ -782,69 +718,208 @@ app.post('/api/admin/alumno', requireAuth, (req, res) => {
         promedio, 
         tipo_beca, 
         porcentaje_beca, 
-        id_jefe 
+        id_jefe,
+        password 
     } = req.body;
 
-    // Validaciones actualizadas (sin total_horas)
+    // Validaciones básicas
     if (!nombre_completo || !correo_electronico || !carrera || !semestre || !porcentaje_beca) {
         return res.status(400).json({ error: 'Todos los campos obligatorios deben ser llenados' });
     }
 
-    if (id_alumno) {
-        // Actualizar alumno existente
-        const updateQuery = `
-            UPDATE alumno SET 
-                nombre_completo = ?,
-                correo_electronico = ?,
-                carrera = ?,
-                semestre = ?,
-                promedio = ?,
-                tipo_beca = ?,
-                porcentaje_beca = ?,
-                id_jefe = ?
-            WHERE id_alumno = ?
-        `;
-        
-        db.execute(updateQuery, [
-            nombre_completo, correo_electronico, carrera, semestre, 
-            promedio, tipo_beca, porcentaje_beca, id_jefe, id_alumno
-        ], (err, results) => {
-            if (err) {
-                console.error('Error actualizando alumno:', err);
-                if (err.code === 'ER_DUP_ENTRY') {
-                    return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
-                }
-                return res.status(500).json({ error: 'Error al actualizar alumno' });
+    try {
+        if (id_alumno) {
+            // Actualizar alumno existente
+            let updateQuery, queryParams;
+            
+            if (password) {
+                // Si se proporciona nueva contraseña, actualizarla
+                const passwordHash = await bcrypt.hash(password, 10);
+                updateQuery = `
+                    UPDATE alumno SET 
+                        nombre_completo = ?,
+                        correo_electronico = ?,
+                        carrera = ?,
+                        semestre = ?,
+                        promedio = ?,
+                        tipo_beca = ?,
+                        porcentaje_beca = ?,
+                        id_jefe = ?,
+                        password_hash = ?
+                    WHERE id_alumno = ?
+                `;
+                queryParams = [
+                    nombre_completo, correo_electronico, carrera, semestre, 
+                    promedio, tipo_beca, porcentaje_beca, id_jefe, passwordHash, id_alumno
+                ];
+            } else {
+                // No actualizar contraseña
+                updateQuery = `
+                    UPDATE alumno SET 
+                        nombre_completo = ?,
+                        correo_electronico = ?,
+                        carrera = ?,
+                        semestre = ?,
+                        promedio = ?,
+                        tipo_beca = ?,
+                        porcentaje_beca = ?,
+                        id_jefe = ?
+                    WHERE id_alumno = ?
+                `;
+                queryParams = [
+                    nombre_completo, correo_electronico, carrera, semestre, 
+                    promedio, tipo_beca, porcentaje_beca, id_jefe, id_alumno
+                ];
             }
             
-            res.json({ success: true, message: 'Alumno actualizado correctamente' });
-        });
-    } else {
-        // Crear nuevo alumno
-        const insertQuery = `
-            INSERT INTO alumno (
+            db.execute(updateQuery, queryParams, (err, results) => {
+                if (err) {
+                    console.error('Error actualizando alumno:', err);
+                    if (err.code === 'ER_DUP_ENTRY') {
+                        return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
+                    }
+                    return res.status(500).json({ error: 'Error al actualizar alumno' });
+                }
+                
+                res.json({ success: true, message: 'Alumno actualizado correctamente' });
+            });
+        } else {
+            // Crear nuevo alumno
+            if (!password) {
+                return res.status(400).json({ error: 'La contraseña es requerida para nuevos alumnos' });
+            }
+            
+            const passwordHash = await bcrypt.hash(password, 10);
+            const insertQuery = `
+                INSERT INTO alumno (
+                    nombre_completo, correo_electronico, carrera, semestre,
+                    promedio, tipo_beca, porcentaje_beca, id_jefe, password_hash, horas_hechas
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+            `;
+            
+            db.execute(insertQuery, [
                 nombre_completo, correo_electronico, carrera, semestre,
-                promedio, tipo_beca, porcentaje_beca, id_jefe, password_hash, horas_hechas
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
-        `;
-        
-        // Password temporal
-        const passwordHash = '123456';
-        
-        db.execute(insertQuery, [
-            nombre_completo, correo_electronico, carrera, semestre,
-            promedio, tipo_beca, porcentaje_beca, id_jefe, passwordHash
-        ], (err, results) => {
-            if (err) {
-                console.error('Error creando alumno:', err);
-                if (err.code === 'ER_DUP_ENTRY') {
-                    return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
+                promedio, tipo_beca, porcentaje_beca, id_jefe, passwordHash
+            ], (err, results) => {
+                if (err) {
+                    console.error('Error creando alumno:', err);
+                    if (err.code === 'ER_DUP_ENTRY') {
+                        return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
+                    }
+                    return res.status(500).json({ error: 'Error al crear alumno' });
                 }
-                return res.status(500).json({ error: 'Error al crear alumno' });
+                
+                // Devolver la contraseña en texto plano solo una vez
+                res.json({ 
+                    success: true, 
+                    message: 'Alumno creado correctamente',
+                    password_generated: password 
+                });
+            });
+        }
+    } catch (error) {
+        console.error('Error en operación de alumno:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
+// Actualizar la ruta de creación/edición de jefe
+app.post('/api/admin/jefe', requireAuth, async (req, res) => {
+    if (req.session.user.tipo !== 'admin') {
+        return res.status(403).json({ error: 'No autorizado' });
+    }
+
+    const { 
+        id_jefe, 
+        nombre_completo, 
+        correo_electronico, 
+        area, 
+        ubicacion,
+        password 
+    } = req.body;
+
+    // Validaciones básicas
+    if (!nombre_completo || !correo_electronico || !area) {
+        return res.status(400).json({ error: 'Todos los campos obligatorios deben ser llenados' });
+    }
+
+    try {
+        if (id_jefe) {
+            // Actualizar jefe existente
+            let updateQuery, queryParams;
+            
+            if (password) {
+                // Si se proporciona nueva contraseña, actualizarla
+                const passwordHash = await bcrypt.hash(password, 10);
+                updateQuery = `
+                    UPDATE jefe_servicio SET 
+                        nombre_completo = ?,
+                        correo_electronico = ?,
+                        area = ?,
+                        ubicacion = ?,
+                        password_hash = ?
+                    WHERE id_jefe = ?
+                `;
+                queryParams = [nombre_completo, correo_electronico, area, ubicacion, passwordHash, id_jefe];
+            } else {
+                // No actualizar contraseña
+                updateQuery = `
+                    UPDATE jefe_servicio SET 
+                        nombre_completo = ?,
+                        correo_electronico = ?,
+                        area = ?,
+                        ubicacion = ?
+                    WHERE id_jefe = ?
+                `;
+                queryParams = [nombre_completo, correo_electronico, area, ubicacion, id_jefe];
             }
             
-            res.json({ success: true, message: 'Alumno creado correctamente' });
-        });
+            db.execute(updateQuery, queryParams, (err, results) => {
+                if (err) {
+                    console.error('Error actualizando jefe:', err);
+                    if (err.code === 'ER_DUP_ENTRY') {
+                        return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
+                    }
+                    return res.status(500).json({ error: 'Error al actualizar jefe' });
+                }
+                
+                res.json({ success: true, message: 'Jefe actualizado correctamente' });
+            });
+        } else {
+            // Crear nuevo jefe
+            if (!password) {
+                return res.status(400).json({ error: 'La contraseña es requerida para nuevos jefes' });
+            }
+            
+            const passwordHash = await bcrypt.hash(password, 10);
+            const insertQuery = `
+                INSERT INTO jefe_servicio (
+                    nombre_completo, correo_electronico, area, ubicacion, password_hash
+                ) VALUES (?, ?, ?, ?, ?)
+            `;
+            
+            db.execute(insertQuery, [
+                nombre_completo, correo_electronico, area, ubicacion, passwordHash
+            ], (err, results) => {
+                if (err) {
+                    console.error('Error creando jefe:', err);
+                    if (err.code === 'ER_DUP_ENTRY') {
+                        return res.status(400).json({ error: 'El correo electrónico ya está registrado' });
+                    }
+                    return res.status(500).json({ error: 'Error al crear jefe' });
+                }
+                
+                // Devolver la contraseña en texto plano solo una vez
+                res.json({ 
+                    success: true, 
+                    message: 'Jefe creado correctamente',
+                    password_generated: password 
+                });
+            });
+        }
+    } catch (error) {
+        console.error('Error en operación de jefe:', error);
+        res.status(500).json({ error: 'Error del servidor' });
     }
 });
 
@@ -979,6 +1054,7 @@ app.post('/api/admin/toggle-jefe', requireAuth, (req, res) => {
         res.json({ success: true, message: `Jefe ${activo ? 'activado' : 'desactivado'} correctamente` });
     });
 });
+
 
 // Iniciar servidor
 app.listen(port, () => {
