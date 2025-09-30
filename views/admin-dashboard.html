@@ -175,129 +175,131 @@
         </main>
     </div>
 
-    <!-- Modal para nuevo/editar alumno -->
+    <!-- Modal para nuevo/editar alumno - VERSIÓN MEJORADA -->
     <div id="modalAlumno" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3 id="modalAlumnoTitulo">Nuevo Alumno</h3>
-            <form id="formAlumno">
-                <input type="hidden" id="alumnoId">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="alumnoNombre">Nombre Completo *</label>
-                        <input type="text" id="alumnoNombre" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="alumnoCorreo">Correo Electrónico *</label>
-                        <input type="email" id="alumnoCorreo" required>
-                    </div>
-
-                    <!-- En el modal de alumno, AGREGAR campo de contraseña -->
-                    <div class="form-group">
-                        <label for="alumnoPassword">Contraseña *</label>
-                        <input type="text" id="alumnoPassword" required>
-                        <div class="password-options">
-                            <button type="button" class="btn-small" onclick="adminDashboard.generarPassword('alumno')">
-                                Generar Automática
-                            </button>
-                            <button type="button" class="btn-small" onclick="adminDashboard.mostrarPassword('alumno')">
-                                👁️
-                            </button>
+            <div class="modal-header">
+                <h3 id="modalAlumnoTitulo">Nuevo Alumno</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="formAlumno">
+                    <input type="hidden" id="alumnoId">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="alumnoNombre">Nombre Completo *</label>
+                            <input type="text" id="alumnoNombre" required placeholder="Ej: Juan Pérez García">
                         </div>
-                        <small>La contraseña se mostrará solo una vez al crear el usuario</small>
+                        <div class="form-group">
+                            <label for="alumnoCorreo">Correo Electrónico *</label>
+                            <input type="email" id="alumnoCorreo" required placeholder="Ej: juan.perez@estudiante.edu">
+                        </div>
+                        <div class="form-group">
+                            <label for="alumnoCarrera">Carrera *</label>
+                            <input type="text" id="alumnoCarrera" required placeholder="Ej: Ingeniería en Sistemas">
+                        </div>
+                        <div class="form-group">
+                            <label for="alumnoSemestre">Semestre *</label>
+                            <input type="number" id="alumnoSemestre" min="1" max="12" required placeholder="1-12">
+                        </div>
+                        <div class="form-group">
+                            <label for="alumnoPromedio">Promedio</label>
+                            <input type="number" id="alumnoPromedio" step="0.1" min="0" max="100" placeholder="0-100">
+                        </div>
+                        <div class="form-group">
+                            <label for="alumnoTipoBeca">Tipo de Beca</label>
+                            <select id="alumnoTipoBeca">
+                                <option value="Académica">Académica</option>
+                                <option value="Deportiva">Deportiva</option>
+                                <option value="Cultural">Cultural</option>
+                                <option value="Social">Social</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="alumnoPorcentajeBeca">% de Beca *</label>
+                            <input type="number" id="alumnoPorcentajeBeca" min="0" max="100" required placeholder="0-100">
+                            <small>Determina las horas de servicio (50% beca = 50 horas)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="alumnoJefe">Jefe Asignado</label>
+                            <select id="alumnoJefe">
+                                <option value="">Sin asignar</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="alumnoPassword">Contraseña *</label>
+                            <div class="password-field">
+                                <input type="password" id="alumnoPassword" required placeholder="Ingresa o genera una contraseña">
+                                <div class="password-options">
+                                    <button type="button" class="btn-small" onclick="adminDashboard.generarPassword('alumno')">
+                                        🔄 Generar Automática
+                                    </button>
+                                    <button type="button" class="btn-small" onclick="adminDashboard.mostrarPassword('alumno')">
+                                        👁️ Mostrar
+                                    </button>
+                                </div>
+                                <small>La contraseña se mostrará solo una vez al crear el usuario</small>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="alumnoCarrera">Carrera *</label>
-                        <input type="text" id="alumnoCarrera" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="alumnoSemestre">Semestre *</label>
-                        <input type="number" id="alumnoSemestre" min="1" max="12" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="alumnoPromedio">Promedio</label>
-                        <input type="number" id="alumnoPromedio" step="0.1" min="0" max="100">
-                    </div>
-                    <div class="form-group">
-                        <label for="alumnoTipoBeca">Tipo de Beca</label>
-                        <select id="alumnoTipoBeca">
-                            <option value="Académica">Académica</option>
-                            <option value="Deportiva">Deportiva</option>
-                            <option value="Cultural">Cultural</option>
-                            <option value="Social">Social</option>
-                        </select>
-                    </div>
-                    <!-- En el modal de alumno, CAMBIAR esto: -->
-                    <div class="form-group">
-                        <label for="alumnoPorcentajeBeca">% de Beca *</label>
-                        <input type="number" id="alumnoPorcentajeBeca" min="0" max="100" required>
-                        <small>Este porcentaje determinará las horas totales de servicio (50% beca = 50 horas)</small>
-                    </div>
-    
-                    <div class="form-group">
-                        <label for="alumnoJefe">Jefe Asignado</label>
-                        <select id="alumnoJefe">
-                            <option value="">Sin asignar</option>
-                        </select>
-                    </div>
-
-                
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="btn-primary">Guardar</button>
-                    <button type="button" class="btn-cancel" onclick="adminDashboard.cerrarModalAlumno()">Cancelar</button>
-                </div>
-            </form>
+                </form>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="adminDashboard.cerrarModalAlumno()">Cancelar</button>
+                <button type="submit" form="formAlumno" class="btn-primary">Guardar Alumno</button>
+            </div>
         </div>
     </div>
 
-    <!-- Modal para nuevo/editar jefe -->
+   <!-- Modal para nuevo/editar jefe - VERSIÓN MEJORADA -->
     <div id="modalJefe" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3 id="modalJefeTitulo">Nuevo Jefe de Servicio</h3>
-            <form id="formJefe">
-                <input type="hidden" id="jefeId">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="jefeNombre">Nombre Completo *</label>
-                        <input type="text" id="jefeNombre" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="jefeCorreo">Correo Electrónico *</label>
-                        <input type="email" id="jefeCorreo" required>
-                    </div>
-
-                    <!-- En el modal de jefe, AGREGAR campo de contraseña -->
-                    <div class="form-group">
-                        <label for="jefePassword">Contraseña *</label>
-                        <input type="text" id="jefePassword" required>
-                        <div class="password-options">
-                            <button type="button" class="btn-small" onclick="adminDashboard.generarPassword('jefe')">
-                                Generar Automática
-                            </button>
-                            <button type="button" class="btn-small" onclick="adminDashboard.mostrarPassword('jefe')">
-                                👁️
-                            </button>
+            <div class="modal-header">
+                <h3 id="modalJefeTitulo">Nuevo Jefe de Servicio</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="formJefe">
+                    <input type="hidden" id="jefeId">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="jefeNombre">Nombre Completo *</label>
+                            <input type="text" id="jefeNombre" required placeholder="Ej: María López Hernández">
                         </div>
-                        <small>La contraseña se mostrará solo una vez al crear el usuario</small>
+                        <div class="form-group">
+                            <label for="jefeCorreo">Correo Electrónico *</label>
+                            <input type="email" id="jefeCorreo" required placeholder="Ej: maria.lopez@universidad.edu">
+                        </div>
+                        <div class="form-group">
+                            <label for="jefeArea">Área *</label>
+                            <input type="text" id="jefeArea" required placeholder="Ej: Biblioteca, Laboratorio, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label for="jefeUbicacion">Ubicación</label>
+                            <input type="text" id="jefeUbicacion" placeholder="Ej: Edificio Central, Piso 2">
+                        </div>
+                        <div class="form-group">
+                            <label for="jefePassword">Contraseña *</label>
+                            <div class="password-field">
+                                <input type="password" id="jefePassword" required placeholder="Ingresa o genera una contraseña">
+                                <div class="password-options">
+                                    <button type="button" class="btn-small" onclick="adminDashboard.generarPassword('jefe')">
+                                        🔄 Generar Automática
+                                    </button>
+                                    <button type="button" class="btn-small" onclick="adminDashboard.mostrarPassword('jefe')">
+                                        👁️ Mostrar
+                                    </button>
+                                </div>
+                                <small>La contraseña se mostrará solo una vez al crear el usuario</small>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="jefeArea">Área *</label>
-                        <input type="text" id="jefeArea" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="jefeUbicacion">Ubicación</label>
-                        <input type="text" id="jefeUbicacion">
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="btn-primary">Guardar</button>
-                    <button type="button" class="btn-cancel" onclick="adminDashboard.cerrarModalJefe()">Cancelar</button>
-                </div>
-            </form>
+                </form>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="adminDashboard.cerrarModalJefe()">Cancelar</button>
+                <button type="submit" form="formJefe" class="btn-primary">Guardar Jefe</button>
+            </div>
         </div>
     </div>
 
