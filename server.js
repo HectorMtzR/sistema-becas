@@ -4,8 +4,9 @@ const session = require('express-session');
 const path = require('path');
 
 const app = express();
-const port = 3000;
 const bcrypt = require('bcryptjs');
+
+require('dotenv').config();
 
 // Configuración
 app.use(express.json());
@@ -22,10 +23,10 @@ app.use(session({
 
 // Conexión a MySQL
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'sistema_sb'
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'sistema_sb'
 });
 
 db.connect((err) => {
@@ -35,6 +36,8 @@ db.connect((err) => {
     }
     console.log('✅ Conectado a MySQL - Base de datos: sistema_sb');
 });
+
+const port = process.env.PORT || 3000;
 
 // Middleware para verificar sesión
 const requireAuth = (req, res, next) => {
@@ -1057,6 +1060,7 @@ app.post('/api/admin/toggle-jefe', requireAuth, (req, res) => {
 
 
 // Iniciar servidor
-app.listen(port, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`🚀 Servidor corriendo en puerto ${port}`);
+    console.log(`🌍 Modo: ${process.env.NODE_ENV || 'development'}`);
 });
